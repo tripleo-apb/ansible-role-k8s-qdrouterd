@@ -1,0 +1,31 @@
+---
+- name: Ensuring config directories exist
+  file:
+    path: "{{ node_config_directory }}/{{ item.key }}"
+    state: "directory"
+    recurse: yes
+  with_dict: "{{ qdrouterd_services }}"
+
+- name: Copying over qdrouterd config
+  vars:
+    service: "{{ qdrouterd_services['qdrouterd'] }}"
+  template:
+    src: "qdrouterd.conf.j2"
+    dest: "{{ node_config_directory }}/qdrouterd/qdrouterd.conf"
+  register: qdrouterd_confs
+
+- slurp:
+    src: "{{ node_config_directory }}/qdrouterd/qdrouterd.conf"
+  register: qdrouterd_confs
+
+- name: Copying over qdrouterd sasl config
+  vars:
+    service: "{{ qdrouterd_services['qdrouterd'] }}"
+  template:
+    src: "qdrouterd-sasl.conf.j2"
+    dest: "{{ node_config_directory }}/qdrouterd/qdrouterd-sasl.conf"
+  register: qdrouterd_sasl_confs
+
+- slurp:
+    src: "{{ node_config_directory }}/qdrouterd/qdrouterd-sasl.conf"
+  register: qdrouterd_sasl_confs

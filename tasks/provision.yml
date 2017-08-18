@@ -1,0 +1,56 @@
+- include: config.yml
+
+- name: Create qdrouterd configmaps
+  ignore_errors: yes
+  k8s_v1_config_map:
+    host: "{{coe_host}}"
+    context: "{{kube_context}}"
+    kubeconfig: "{{config_file}}"
+    name: mariadb
+    namespace: openstack
+    state: present
+    debug: yes
+    labels:
+      service: qdrouterd
+    data:
+      kolla-config: |
+        {
+        "command": "/usr/sbin/qdrouterd",
+        "config_files": [],
+        "permissions": [
+          {
+            "path": "/var/lib/qdrouterd",
+            "owner": "qdrouterd:qdrouterd",
+            "recurse": true
+          },
+          {
+            "path": "/var/log/kolla/qdrouterd",
+            "owner": "qdrouterd:qdrouterd",
+            "recurse": true
+          }
+          ]
+        }
+      qdrouterd-sasl.conf: |
+        {{ qdrouterd_sasl_confs['content'] | b64decode }}
+      qdrouterd.conf: |
+        {{ qdrouterd_confs['content'] | b64decode  }}
+
+- name: Create qdrouterd service
+  k8s_v1_service:
+    host: "{{coe_host}}"
+    context: "{{kube_context}}"
+    kubeconfig: "{{config_file}}"
+    name: qdrouterd
+    namespace: openstack
+    state: present
+    ports:
+      - port: '{{qdrouterd_port}}'
+        name: qdrouterd
+    selector:
+      app: qdrouterd
+    labels:
+      app: qdrouterd
+    debug: yes
+    annotations:
+      service.alpha.kubernetes.io/tolerate-unready-endpoints: "false"
+  register: create_service

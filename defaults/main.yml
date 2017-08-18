@@ -1,0 +1,31 @@
+coe_host: "https://127.0.0.1:8443"
+kube_context: "kubernetes-admin@kubernetes"
+config_file: "~/.kube/config"
+action: provision
+
+hiera_data: {}
+hiera_data_file: '/etc/puppet/hieradata/service_configs.json'
+
+project_name: "qdrouterd"
+
+# TODO(flaper87): move this
+node_config_directory: "/tmp"
+
+qdrouterd_port: 15676
+qdrouterd_services:
+  qdrouterd:
+    container_name: qdrouterd
+    group: qdrouterd
+    enabled: true
+    image: "{{ qdrouterd_image_full }}"
+    volumes:
+
+
+####################
+# Docker
+####################
+qdrouterd_image: "centos-binary-qdrouterd"
+# TODO(flaper87): move this
+openstack_release: "latest"
+qdrouterd_tag: "{{ openstack_release }}"
+qdrouterd_image_full: "{{ qdrouterd_image }}:{{ qdrouterd_tag }}"
