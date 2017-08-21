@@ -6,7 +6,7 @@
     host: "{{coe_host}}"
     context: "{{kube_context}}"
     kubeconfig: "{{config_file}}"
-    name: mariadb
+    name: qrouterd
     namespace: openstack
     state: present
     debug: yes
@@ -54,3 +54,54 @@
     annotations:
       service.alpha.kubernetes.io/tolerate-unready-endpoints: "false"
   register: create_service
+
+- name: Create qdrouterd deployment
+  k8s_v1beta1_deployment:
+    host: "{{coe_host}}"
+    context: "{{kube_context}}"
+    kubeconfig: "{{config_file}}"
+    name: qdrouterd
+    namespace: openstack
+    state: present
+    debug: yes
+    spec_template_metadata_name: qdrouterd
+    spec_template_metadata_labels:
+      app: qdrouterd
+      galera: enabled
+    containers:
+      - name: qdrouterd
+        image: tripleoupstream/centos-binary-qdrouterd
+        ports:
+        - container_port: '{{qdrouterd_port}}'
+        env:
+        - name: KOLLA_CONFIG_STRATEGY
+          value: COPY_ALWAYS
+        - name: KOLLA_KUBERNETES
+          value: ""
+        volume_mounts:
+        - name: kolla-config
+          mountPath: /var/lib/kolla/config_files/
+        - name: qdrouterd-conf
+          mountPath: /etc/qdrouterd/qdrouterd.conf
+        - name: qdrouterd-sasl-conf
+          mountPath: /etc/sasl/qdrouterd-sasl.conf
+    replicas: 1
+    volumes:
+      - name: kolla-config
+        config_map:
+          name: qdrouterd
+          items:
+            - key: kolla-config
+              path: config.json
+      - name: qdrouterd-conf
+        config_map:
+          name: qdrouterd
+          items:
+            - key: qdrouterd.conf
+              path: qdrouterd.conf
+      - name: qdrouterd-sasl-conf
+        config_map:
+          name: qdrouterd
+          items:
+            - key: qdrouterd-sasl.conf
+              path: qdrouterd-sasl.conf
