@@ -7,7 +7,7 @@
     context: "{{kube_context}}"
     kubeconfig: "{{config_file}}"
     name: qrouterd
-    namespace: openstack
+    namespace: "{{namespace}}"
     state: present
     debug: yes
     labels:
@@ -41,7 +41,7 @@
     context: "{{kube_context}}"
     kubeconfig: "{{config_file}}"
     name: qdrouterd
-    namespace: openstack
+    namespace: "{{namespace}}"
     state: present
     ports:
       - port: '{{qdrouterd_port}}'
@@ -61,7 +61,7 @@
     context: "{{kube_context}}"
     kubeconfig: "{{config_file}}"
     name: qdrouterd
-    namespace: openstack
+    namespace: "{{namespace}}"
     state: present
     debug: yes
     spec_template_metadata_name: qdrouterd
